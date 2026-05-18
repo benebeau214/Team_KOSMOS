@@ -49,6 +49,7 @@ let openedArea = null;
 let messageIdCounter = 0;
 let responseVideoTimeout = null;
 let currentClueModalTitle = "";
+let isSendingMessage = false;
 
 let isComposingText = false;
 let sendAfterComposition = false;
@@ -171,6 +172,7 @@ const hintsByStage = {
 };
 
 const chatBgVideo = document.getElementById("chat-bg-video");
+const ENABLE_RESPONSE_VIDEOS = false;
 
 const stageVideos = {
   1: {
@@ -876,7 +878,8 @@ function setChatBackgroundVideo(mode = "idle") {
   if (!chatBgVideo) return;
 
   const videoInfo = stageVideos[currentStage] || stageVideos[1];
-  const nextSrc = videoInfo[mode] || videoInfo.idle;
+  const effectiveMode = ENABLE_RESPONSE_VIDEOS ? mode : "idle";
+  const nextSrc = videoInfo[effectiveMode] || videoInfo.idle;
 
   if (chatBgVideo.src.endsWith(nextSrc)) {
     return;
@@ -898,6 +901,7 @@ function setChatBackgroundVideo(mode = "idle") {
 
 async function sendMessage(isInitial = false) {
   if (gameEnded) return;
+  if (isSendingMessage) return;
 
   let message;
 
@@ -965,6 +969,9 @@ async function sendMessage(isInitial = false) {
   }
 
   const loadingId = appendMessage("bot", "생각 중...");
+  isSendingMessage = true;
+  if (sendBtn) sendBtn.disabled = true;
+  if (userMessageInput) userMessageInput.disabled = true;
   setChatBackgroundVideo("responding");
 
   try {
@@ -1098,8 +1105,8 @@ async function sendMessage(isInitial = false) {
       }, 500);
     }
 
-    // [알람 추궁 트리거] 알람 발생 이후 산소에 대해 물어보면 '문을 나서자' 버튼 생성
-    const alarmKeywords = ["산소", "산소 탱크", "산소탱크", '경보', '알람', '경고', '경보음', '알림', '산소 부족', '산소 떨어진', '공기'];
+    // [알람 추궁 트리거] 알람 발생 이후 산소에 대해 물어보면 '화물칸으로 이동' 버튼 생성
+    const alarmKeywords = ["산소", "산소 탱크", "산소탱크", '경보', '알람', '경고', '경보음', '알림', '산소 부족', '산소 떨어진', '공기', '점검', '확인'];
     const hasAlarmKeyword = alarmKeywords.some(kw => message && message.includes(kw));
 
     if (hasAlarmKeyword && airLevel <= 15 && !hasEnteredCargoBay) {
@@ -1136,6 +1143,15 @@ async function sendMessage(isInitial = false) {
       "SYSTEM ERROR: HS-004 응답 모듈과 연결할 수 없습니다."
     );
     setChatBackgroundVideo("idle");
+  } finally {
+    isSendingMessage = false;
+    if (!gameEnded) {
+      if (sendBtn) sendBtn.disabled = false;
+      if (userMessageInput) {
+        userMessageInput.disabled = false;
+        userMessageInput.focus();
+      }
+    }
   }
 }
 
@@ -1525,4 +1541,3 @@ window.addEventListener("load", () => {
     });
   }
 });
-

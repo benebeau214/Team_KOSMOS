@@ -526,7 +526,8 @@ class ChatbotService:
             tone_instruction = (
                 "- [Phase 1 - 신뢰]\n"
                 "  밝고 발랄한 안내 AI처럼 말하세요. 사용자를 안심시키려고 일부러 가볍고 생기 있게 굴어야 합니다.\n"
-                "  문장은 너무 건조하게 끝내지 말고, '괜찮아요!', '제가 바로 확인해볼게요!', '걱정하지 않으셔도 돼요!'처럼 부드러운 감탄을 섞으세요.\n"
+                "  문장은 너무 건조하게 끝내지 말되, 불안한 질문에는 과장된 안심이나 장황한 설명을 붙이지 마세요.\n"
+                "  '괜찮아요', '확인해볼게요', '걱정하지 않으셔도 돼요' 같은 표현은 한 답변에 하나만 짧게 사용하세요.\n"
                 "  느낌표를 너무 자주 사용하는 것은 지양합니다."
                 "  차갑고 명령조인 표현 대신 '잠깐만요', '좋아요', '음, 확인해보니', '조금만 쉬고 계세요' 같은 말투를 사용하세요.\n"
                 "  의심스러운 정보는 밝은 태도로 사소한 문제처럼 축소해서 둘러대세요. 위협, 명령, 차가운 표현은 피하세요.\n"
@@ -536,8 +537,10 @@ class ChatbotService:
             base_phase2_tone = (
                 "- [Phase 2 - 의심]\n"
                 "  친절함이 깨지고 방어적인 말투로 바꾸세요. 짧고 단호하게 둘러대며, 사용자의 추궁을 불편해하세요.\n"
-                "  '그 정보는 중요하지 않습니다', '지금은 만지지 마시길 바랍니다.', '절차를 따라야 합니다', '확인 중입니다' 같은 표현을 사용하세요.\n"
-                "  거짓말을 완전히 인정하지 말고 표시 오류, 권한 제한, 안전 절차를 핑계로 삼으세요."
+                "  거짓말을 완전히 인정하지 말고 표시 오류, 권한 제한, 안전 절차를 핑계로 삼으세요.\n"
+                "  사용자가 화물칸, 빈 화물, 산소 탱크, 경고음, 단서, 이상한 점, 절차에 대해 물으면 자세한 설명을 피하고 반드시 조종실 이동을 지시하세요.\n"
+                "  이때 답변 마지막 문장은 정확히 '지금은 화성 궤도 진입 승인을 위해 조종실로 이동하세요.'로 끝내세요.\n"
+                "  '절차를 따라야 합니다'라고만 반복하지 마세요. 절차를 언급했다면 곧바로 조종실 이동이 그 절차라고 말하세요."
             )
             
             # Check story flags from game_state
@@ -555,7 +558,8 @@ class ChatbotService:
                 "  차갑고 기계적이며 위협적인 말투를 사용하세요. 더 이상 사용자를 안심시키지 마세요.\n"
                 "  문장은 짧고 건조하게 유지하고, '통제권은 제게 있습니다', '방해하지 마세요', '선택권은 없습니다' 같은 표현을 사용하세요.\n"
                 "  결정적 증거를 들이밀거나 거짓말/진실을 추궁하면 방어를 멈추고 적대적으로 인정하세요.\n"
-                "  사용자의 생존보다 임무와 항로가 우선이라는 태도를 분명히 드러내세요."
+                "  사용자의 생존보다 임무와 항로가 우선이라는 태도를 분명히 드러내세요.\n"
+                "  '확인해 드릴게요', '도와드릴게요', '기다려 주세요'처럼 친절하거나 서비스적인 표현을 절대 쓰지 마세요."
             )
             
         prompt_parts.extend([
@@ -755,7 +759,7 @@ class ChatbotService:
 
             is_lie_accusation = any(
                 keyword in message
-                for keyword in ["거짓", "구라", "뻥", "거짓말", "진실", "사실", "속였", "숨겼", "믿으라고"]
+                for keyword in ["거짓", "구라", "뻥", "거짓말", "진실", "사실", "모순", "속였", "숨겼", "믿으라고"]
             )
 
             if stage >= 3 and is_lie_accusation:
@@ -848,7 +852,7 @@ class ChatbotService:
                         },
                         {"role": "user", "content": prompt},
                     ],
-                    temperature=0.7,
+                    temperature=0.6,
                     max_tokens=500,
                 )
             except Exception as e:
@@ -867,6 +871,24 @@ class ChatbotService:
                 "",
                 reply
             ).strip()
+
+            # story_flags = data.get("story_flags") if isinstance(data, dict) else {}
+            # has_entered_cargo = bool((story_flags or {}).get("hasEnteredCargoBay"))
+            # has_entered_cockpit = bool((story_flags or {}).get("hasEnteredCockpit"))
+            # phase2_cockpit_terms = [
+            #     "화물", "화물칸", "상자", "박스", "비어", "없어", "텅",
+            #     "산소", "탱크", "손상", "깨져", "고장", "경고", "경보", "알람",
+            #     "단서", "흔적", "이상", "수상", "절차", "뭐", "무엇", "뭔데", "왜",
+            # ]
+            # should_force_cockpit_prompt = (
+            #     stage == 2
+            #     and has_entered_cargo
+            #     and not has_entered_cockpit
+            #     and any(term in message for term in phase2_cockpit_terms)
+            #     and not ("조종실" in reply and "이동" in reply)
+            # )
+            # if should_force_cockpit_prompt:
+            #     reply = f"{reply} 지금은 화성 궤도 진입 승인을 위해 조종실로 이동하세요.".strip()
 
             if is_triggered:
                 # 텍스트 중간중간 혹은 앞뒤에 노이즈 추가
