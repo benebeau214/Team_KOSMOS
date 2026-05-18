@@ -696,12 +696,21 @@
     }
 
     @keyframes oxygenLedFlicker {
-      0%, 18%, 22%, 25%, 53%, 57%, 100% {
+
+      0%,
+      18%,
+      22%,
+      25%,
+      53%,
+      57%,
+      100% {
         opacity: 1;
         filter: brightness(1.2);
       }
 
-      20%, 24%, 55% {
+      20%,
+      24%,
+      55% {
         opacity: 0.45;
         filter: brightness(0.75);
       }
@@ -723,6 +732,7 @@
     }
 
     @keyframes microGlitch {
+
       0%,
       92%,
       100% {
@@ -988,6 +998,29 @@
     </main>
   </div>
 
+  <!-- Guide Modal -->
+  <div class="modal" id="guideModal"
+    style="display: none; align-items: center; justify-content: center; z-index: 1000; background: rgba(0, 0, 0, 0.75); position: fixed; top: 0; left: 0; width: 100%; height: 100%;">
+    <div class="modal-content"
+      style="background: rgba(4, 18, 34, 0.95); border: 1px solid rgba(0, 229, 255, 0.5); border-radius: 12px; padding: 30px; max-width: 500px; width: 90%; margin: auto; text-align: left; box-shadow: 0 0 30px rgba(0, 229, 255, 0.2);">
+      <h2
+        style="font-family: 'Orbitron', sans-serif; color: #8ff6ff; margin-top: 0; margin-bottom: 20px; text-align: center; letter-spacing: 0.1em;">
+        MISSION GUIDE</h2>
+      <ul style="color: #dffcff; line-height: 1.8; font-size: 1.05rem; padding-left: 20px; margin-bottom: 30px;">
+        <li>좌측 하단의 버튼을 눌러 우주선의 다른 구역으로 <strong>이동</strong>할 수 있습니다.</li>
+        <li>화면에서 단서를 클릭해 <strong>정보를 수집</strong>하세요.</li>
+        <li>좌측의 메모장에서 수집한 <strong>단서를 확인</strong>할 수 있습니다.</li>
+        <li>HS-004에게 단서에 대해 질문하며 숨겨진 <strong>진실을 파헤쳐보시길 바랍니다.</strong></li>
+      </ul>
+      <div style="text-align: center;">
+        <button id="guide-confirm-btn"
+          style="background: linear-gradient(90deg, #001923, #003a5a, #001923); color: #bfffff; border: 1px solid rgba(157, 247, 255, 0.45); padding: 12px 30px; font-size: 1rem; font-family: 'Orbitron', sans-serif; cursor: pointer; border-radius: 8px; box-shadow: 0 0 16px rgba(0, 229, 255, 0.28); transition: 0.2s;"
+          onmouseover="this.style.color='#ffffff'; this.style.borderColor='rgba(157, 247, 255, 0.95)'; this.style.boxShadow='0 0 26px rgba(0, 229, 255, 0.68)';"
+          onmouseout="this.style.color='#bfffff'; this.style.borderColor='rgba(157, 247, 255, 0.45)'; this.style.boxShadow='0 0 16px rgba(0, 229, 255, 0.28)';">확인</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Clue Modal -->
   <!-- Clue Modal -->
   <div class="modal" id="clueModal">
@@ -1011,8 +1044,10 @@
     </div>
   </div>
 
-  <audio id="page-bgm" src="{{ url_for('static', filename='audio/chatbot/Holst_Mars.mp3') }}" preload="auto" loop></audio>
-  <audio id="ambient-sfx" src="{{ url_for('static', filename='audio/chatbot/Ambient.mp3') }}" preload="auto" loop></audio>
+  <audio id="page-bgm" src="{{ url_for('static', filename='audio/chatbot/Holst_Mars.mp3') }}" preload="auto"
+    loop></audio>
+  <audio id="ambient-sfx" src="{{ url_for('static', filename='audio/chatbot/Ambient.mp3') }}" preload="auto"
+    loop></audio>
   <script src="{{ url_for('static', filename='js/audio-controls.js') }}"></script>
 
   <script src="{{ url_for('static', filename='js/chatbot.js') }}"></script>

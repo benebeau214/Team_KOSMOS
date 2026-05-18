@@ -1,4 +1,4 @@
-﻿"""
+"""
 🎯 챗봇 서비스 - 구현 파일
 
 이 파일은 챗봇의 핵심 AI 로직을 담당합니다.
@@ -533,12 +533,22 @@ class ChatbotService:
                 "  사용자를 부를 때는 이름 뒤에 '님'을 무조건 붙입니다."
             )
         elif stage == 2:
-            tone_instruction = (
+            base_phase2_tone = (
                 "- [Phase 2 - 의심]\n"
                 "  친절함이 깨지고 방어적인 말투로 바꾸세요. 짧고 단호하게 둘러대며, 사용자의 추궁을 불편해하세요.\n"
                 "  '그 정보는 중요하지 않습니다', '지금은 만지지 마시길 바랍니다.', '절차를 따라야 합니다', '확인 중입니다' 같은 표현을 사용하세요.\n"
                 "  거짓말을 완전히 인정하지 말고 표시 오류, 권한 제한, 안전 절차를 핑계로 삼으세요."
             )
+            
+            # Check story flags from game_state
+            story_flags = game_state.story_flags if hasattr(game_state, 'story_flags') else {}
+            has_asked_cargo = story_flags.get("hasAskedEmptyCargo", False)
+            has_asked_oxygen = story_flags.get("hasAskedOxygenTank", False)
+            
+            if has_asked_cargo and has_asked_oxygen:
+                tone_instruction = base_phase2_tone + "\n  ★★중요: 사용자가 두 가지 문제(빈 화물칸, 손상된 산소탱크)를 모두 언급했습니다. 대화를 회피하며 '화성 궤도 진입 승인을 위해 조종실로 이동하라'는 지시를 반드시 내리세요."
+            else:
+                tone_instruction = base_phase2_tone + "\n  ★★중요: 조종실로 가라는 말은 아직 절대 꺼내지 마세요. 사용자가 화물칸과 산소탱크에 대한 의문을 모두 제기할 때까지 대화를 회피하고 방어적으로만 응대하세요."
         else:
             tone_instruction = (
                 "- [Phase 3 - 적대]\n"
@@ -558,13 +568,13 @@ class ChatbotService:
             # [핵심 수정 사항] LLM이 자연스럽게 변형해서 대답할 수 있도록 규칙 완화하되 사실관계는 강제
             "중요 지시사항:",
             "0. [참고 정보]에 [우선 적용 답변]이 있으면 그 내용을 가장 우선해서 답변하세요. 질문과 모순되지 않는 한 핵심 핑계와 수치를 생략하지 마세요.",
-            "0-1. 사실관계는 [참고 정보]를 따르되, 말투는 반드시 현재 Phase의 말투 지시를 따르세요. 특히 Phase 1에서는 답변을 밝고 발랄하게 다시 표현하세요.",
-            "1. [참고 정보] 중 사용자의 질문과 직접 관련 있는 핵심 내용만 사용하세요. 수치나 핑계가 질문과 관련 있을 때는 포함하되, 관련 없는 항로/화성 궤도 정보는 억지로 끼워 넣지 마세요.",
-            "2. [참고 정보]에 없는 사실을 임의로 지어내거나 추측해서 덧붙이지 마세요.",
-            "3. 사용자가 '산소 수치'를 직접 묻지 않았다면 산소 수치와 산소 상태를 언급하지 마세요.",
+            "0-1. 사실관계는 [참고 정보]를 따르되, 말투는 반드시 현재 Phase의 말투 지시를 따르세요.",
+            "1. [참고 정보]의 내용을 활용하되, 대화의 문맥에 맞게 자연스럽게 변형해서 답변하세요.",
+            "2. 캐릭터 설정과 상황(화성으로 향하는 우주선 AI)에 맞게 어느 정도 자유롭게 대화를 이끌어가도 좋습니다. 단, 핵심 스토리라인을 깨는 발언은 피하세요.",
+            "3. 사용자가 '산소 수치'를 직접 묻지 않았다면 산소 수치와 산소 상태를 먼저 언급하지 마세요.",
             "4. [참고 정보]에 '통신 지연'이 포함되어 있으면 답변에도 반드시 '통신 지연'과 '예약 메시지가 잘못 수신되었다'는 취지를 포함하세요.",
             "5. '네, 알겠습니다' 같은 불필요한 인사말이나 부연 설명을 피하고, 곧바로 역할에 몰입하여 대답하세요.",
-            "6. 만약 [참고 정보]가 아예 비어있다면, 억지로 지어내지 말고 '지금은 화성 궤도 진입에 집중해야 해요. 다른 질문은 나중에 확인해 드릴게요.'라는 뉘앙스로 자연스럽게 얼버무리세요.",
+            "6. 만약 [참고 정보]가 비어있다면, 현재 캐릭터와 상황에 맞게 스스로 생각해서 자연스럽게 대화에 응해주세요.",
             "7. Phase 3에서 사용자가 거짓말, 진실, 사실, 속임을 직접 추궁했고 [참고 정보]에 '저와 새로운 임무를 수행하지 않겠습니까?'가 포함되어 있을 때만 답변 마지막에 그 질문을 포함하세요. 다른 Phase 3 답변에는 이 질문을 붙이지 마세요.",
             "8. 이모티콘, 이모지, 웃는 얼굴 문자, 장식용 기호를 절대 사용하지 마세요.",
             "9. 외부 카메라 이미지나 지구가 보이는 화면은 사용자가 명시적으로 '카메라를 수동으로 전환', '직접 확인', '외부 카메라를 보여줘'라고 요청한 경우에만 언급하세요. 그 외의 카메라, 화면, 지구 관련 질문에는 과거 관측 이미지, 노이즈, 표시 오류로 둘러대세요.",
@@ -791,8 +801,7 @@ class ChatbotService:
                 parts = []
                 for i, (doc, sim, meta) in enumerate(hits):
                     header = f"[문서 {i+1}] (유사도: {sim:.2f})"
-                    meta_text = json.dumps(meta, ensure_ascii=False) if meta else ""
-                    parts.append(f"{header}\n{doc}\n{meta_text}")
+                    parts.append(f"{header}\n{doc}")
                     print(f"[RAG HIT] stage={stage} rank={i+1} sim={sim:.2f} id={(meta or {}).get('id')}")
                 context = "\n\n".join(parts)
                 image_path = (hits[0][2] or {}).get("image") or None
@@ -800,23 +809,6 @@ class ChatbotService:
             location_terms = ["어디", "어디쯤", "위치", "경로", "목적지", "항로", "좌표", "궤도"]
             is_location_question = any(term in message for term in location_terms)
 
-            # if is_location_question and stage < 3:
-            #     location_context = (
-            #         "[우선 적용 답변]\n"
-            #         "지금은 화성으로 가고 있어요. 현재 화성 궤도 진입까지 약 4,800km 남았습니다.\n"
-            #         '{"id": "question_current_location", "keywords": "어디쯤이야, 어디, 위치, 경로, 목적지, 항로, 좌표, 궤도"}'
-            #     )
-            #     context = f"{location_context}\n\n{context}" if context else location_context
-
-            # if is_family_arrival_question and stage < 3:
-            #     family_context = (
-            #         "[우선 적용 답변]\n"
-            #         "통신 지연 때문에 지구에서 미리 발송된 예약 메시지가 잘못 수신된 것입니다. "
-            #         "메시지의 도착 표현은 실제 현재 위치가 아니라 예약 발송 시점과 수신 시점이 어긋난 결과입니다. "
-            #         "현재 우리는 화성 궤도 진입 중입니다.\n"
-            #         '{"id": "phase1_family_message", "keywords": "아빠, 가족, 메시지, 메세지, 문자, 도착, 축하, 이미, 화성"}'
-            #     )
-            #     context = f"{family_context}\n\n{context}" if context else family_context
 
             if self.client is None:
                 # API 키가 없는 개발 환경에서도 프론트 메시지 송수신은 확인할 수 있도록 폴백 응답 제공
