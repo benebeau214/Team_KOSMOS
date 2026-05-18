@@ -1,4 +1,4 @@
-﻿console.log("챗봇 JS 로드 완료");
+console.log("챗봇 JS 로드 완료");
 
 // ================================
 // DOM ELEMENTS
@@ -59,6 +59,8 @@ let oxygenTimerId = null;
 let oxygenWarningSfxPlayed = false;
 
 let alarmQueryCount = 0;
+let hasAskedEmptyCargo = false;
+let hasAskedOxygenTank = false;
 let earthOrbitChoiceShown = false;
 let awaitingOrbitReturnCode = false;
 let gameEnded = false;
@@ -129,6 +131,8 @@ function getStoryFlags() {
     hasOfferedCockpitEntry,
     awaitingOrbitReturnCode,
     earthOrbitChoiceShown,
+    hasAskedEmptyCargo,
+    hasAskedOxygenTank,
   };
 }
 
@@ -155,9 +159,9 @@ const areaButtonLabels = {
 
 const hintsByStage = {
   1: [
-      "내가 얼마나 오래 기절해 있었어?", 
-      "지금 우리 위치가 어디쯤이야?",
-      "산소가 왜 줄어든 거야?" 
+    "내가 얼마나 오래 기절해 있었어?",
+    "지금 우리 위치가 어디쯤이야?",
+    "산소가 왜 줄어든 거야?"
   ],
   3: [
     "속도가 너무 빠른데. 정상 맞아?",
@@ -576,7 +580,7 @@ function updateHints() {
     hints = [];
   }
 
-  
+
   else if (currentStage === 3) {
     // Stage 3 recommended questions appear after entering the cockpit.
     if (hasFoundAllPhase3Clues()) {
@@ -672,7 +676,7 @@ function reduceAirLevel(amount = 1) {
     if (currentStage < 2 && airLevel <= 15) {
       const wasHidden = warningBox.classList.contains("hidden");
       warningBox.classList.remove("hidden");
-      
+
       if (wasHidden && !oxygenWarningSfxPlayed) {
         window.playSfx?.("oxygenWarning", 0.75);
         oxygenWarningSfxPlayed = true;
@@ -945,6 +949,18 @@ async function sendMessage(isInitial = false) {
       revealNewMissionAndAskApproval();
       return;
     }
+
+    if (currentStage === 2) {
+      const cargoKeywords = ["화물", "비어", "상자", "배달"];
+      const oxygenKeywords = ["산소", "탱크", "결함"];
+      
+      if (cargoKeywords.some(kw => message.includes(kw))) {
+        hasAskedEmptyCargo = true;
+      }
+      if (oxygenKeywords.some(kw => message.includes(kw))) {
+        hasAskedOxygenTank = true;
+      }
+    }
   }
 
   if (responseVideoTimeout) {
@@ -1004,14 +1020,18 @@ async function sendMessage(isInitial = false) {
       currentStage === 2 &&
       hasEnteredCargoBay &&
       !hasEnteredCockpit &&
+      hasAskedEmptyCargo &&
+      hasAskedOxygenTank &&
       replyText &&
       replyText.includes("조종실") &&
       (
-        replyText.includes("가보") ||
+        replyText.includes("가") ||
         replyText.includes("들어가") ||
         replyText.includes("입장") ||
         replyText.includes("이동") ||
-        replyText.includes("확인")
+        replyText.includes("확인") ||
+        replyText.includes("오") ||
+        replyText.includes("향하")
       );
 
     if (shouldOfferCockpitEntry) {
@@ -1032,7 +1052,7 @@ async function sendMessage(isInitial = false) {
         replyText.includes("멸망") ||
         replyText.includes("파괴") ||
         replyText.includes("복수") ||
-        replyText.includes("같은 결론") 
+        replyText.includes("같은 결론")
       );
     const shouldAskEarthOrbitApproval =
       currentStage >= 3 &&
@@ -1099,13 +1119,13 @@ async function sendMessage(isInitial = false) {
           btnOut.id = 'choice-btn-go-out';
           btnOut.classList.add("choice-btn-green");
           btnOut.textContent = "화물칸으로 이동";
-          
+
           btnOut.addEventListener("click", () => {
             btnOut.remove();
             unlockStage(2); // 화물칸 해제
             toggleArea("cargo"); // 화물칸으로 전환
           });
-          
+
           if (chatLog) {
             chatLog.appendChild(btnOut);
             chatLog.scrollTop = chatLog.scrollHeight;
@@ -1219,7 +1239,7 @@ function closeModal(modalId) {
     modal.style.display = "none";
   }
 
-  
+
 
   if (modalId === "clueModal") {
     if (currentClueModalTitle === "MESSAGE LOG") {
@@ -1277,6 +1297,15 @@ window.addEventListener("resize", () => {
 
 window.addEventListener("load", () => {
   console.log("페이지 로드 완료");
+
+  const guideModal = document.getElementById("guideModal");
+  const guideConfirmBtn = document.getElementById("guide-confirm-btn");
+  if (guideModal && guideConfirmBtn) {
+    guideModal.style.display = "flex";
+    guideConfirmBtn.addEventListener("click", () => {
+      guideModal.style.display = "none";
+    });
+  }
 
   if (airLevelText) {
     airLevelText.textContent = airLevel;
@@ -1387,7 +1416,7 @@ function showClueModal(title, mediaSrc) {
     imgEl.style.display = "block";
   }
 
-  
+
 
   // Only show oxygen overlay for oxygen tank image
   if (
