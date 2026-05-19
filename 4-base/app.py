@@ -91,8 +91,6 @@ def index():
 @app.route('/detail')
 def detail():
     username = request.args.get('username', '사용자')
-    usergender = request.args.get('usergender', '미정')
-
     bot_info = {
         'name': config.get('name', '챗봇'),
         'image': url_for('static', filename=config.get('thumbnail', 'images/hateslop/club_logo.png')),
@@ -103,22 +101,19 @@ def detail():
     return render_template(
         'detail.html',
         bot=bot_info,
-        username=username,
-        usergender=usergender
+        username=username
     )
 
 # 채팅 화면
 @app.route('/chat')
 def chat():
     username = request.args.get('username', '사용자')
-    usergender = request.args.get('usergender', '미정')
     bot_name = config.get('name', '챗봇')
     image_files = get_image_files()
     
     return render_template('chat.html', 
                          bot_name=bot_name, 
                          username=username,
-                         usergender=usergender,
                          image_files=image_files)
 
 # API 엔드포인트: 챗봇 응답 생성
@@ -128,7 +123,6 @@ def api_chat():
         data = request.get_json()
         user_message = data.get('message', '')
         username = data.get('username', '사용자')
-        usergender = data.get('usergender', '미정')
         airLevel = data.get('airLevel', 20)
         stage = data.get('stage', 1)
         if not user_message:
@@ -139,7 +133,7 @@ def api_chat():
         
         # 응답 생성
         chatbot = get_chatbot_service()
-        response = chatbot.generate_response(user_message, username, usergender, airLevel=airLevel, stage=stage)
+        response = chatbot.generate_response(user_message, username, airLevel=airLevel, stage=stage)
         
         return jsonify(response)
         

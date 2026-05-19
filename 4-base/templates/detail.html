@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
   <head>
     <meta charset="UTF-8" />
@@ -414,15 +414,6 @@
             <label for="username">CREW NAME</label>
             <input type="text" id="username" />
           </div>
-
-          <div class="form-row">
-            <label for="usergender">CREW GENDER</label>
-            <select name="usergender" id="usergender">
-              <option value="">성별을 선택하세요</option>
-              <option value="남성">남성</option>
-              <option value="여성">여성</option>
-            </select>
-          </div>
         </div>
 
         <a href="#" class="start-chat" id="start-chat-btn">우주 항해 시작하기</a>
@@ -439,13 +430,11 @@
     <script>
       const startChatBtn = document.getElementById("start-chat-btn");
       const usernameInput = document.getElementById("username");
-      const usergenderInput = document.getElementById("usergender");
 
       startChatBtn.addEventListener("click", function (event) {
         event.preventDefault();
         const username = usernameInput.value.trim() || "사용자";
-        const usergender = usergenderInput.value.trim() || "미정";
-        window.location.href = `/chat?username=${encodeURIComponent(username)}&usergender=${encodeURIComponent(usergender)}`;
+        window.location.href = `/chat?username=${encodeURIComponent(username)}`;
       });
 
       usernameInput.addEventListener("keypress", function (event) {

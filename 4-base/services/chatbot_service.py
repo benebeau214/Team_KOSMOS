@@ -424,7 +424,7 @@ class ChatbotService:
             return []
     
     
-    def _build_prompt(self, game_state, user_message: str, context: str = None, username: str = "사용자", usergender: str = "미정", stage: int = 1) -> str:
+    def _build_prompt(self, game_state, user_message: str, context: str = None, username: str = "사용자", stage: int = 1) -> str:
         """
         LLM 프롬프트 구성
         
@@ -433,7 +433,6 @@ class ChatbotService:
             user_message (str): 사용자 메시지
             context (str): RAG 검색 결과 (선택)
             username (str): 사용자 이름
-            usergender (str): 사용자 성별
         Returns:
             str: 최종 프롬프트
         
@@ -479,12 +478,11 @@ class ChatbotService:
             base,
         ]
 
-        # 성별 인식할 수 있게
+        # 대화 상대 정보 (성별 제외)
         prompt_parts.extend([
         "",
         "[현재 대화 상대 정보]",
         f"- 이름: {username}",
-        f"- 성별: {usergender}", 
         ])
         
         state_lines = [
@@ -832,7 +830,6 @@ class ChatbotService:
                     user_message=message,
                     context=context,
                     username=username,
-                    usergender=usergender,
                     game_state=game_state,
                     stage=stage
                 )

@@ -11,7 +11,6 @@ const chatArea = document.querySelector(".chat-area");
 const rootElement = gameShell || chatArea;
 
 const username = rootElement ? rootElement.dataset.username || "사용자" : "사용자";
-const usergender = rootElement ? rootElement.dataset.usergender || "미정" : "미정";
 
 const chatLog = document.getElementById("chat-log");
 const userMessageInput = document.getElementById("user-message");
@@ -989,7 +988,6 @@ async function sendMessage(isInitial = false) {
       body: JSON.stringify({
         message: message,
         username: username,
-        usergender: usergender,
         stage: currentStage,
         airLevel: airLevel,
         visited_areas: getVisitedAreas(),

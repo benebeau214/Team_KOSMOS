@@ -869,7 +869,7 @@
 </head>
 
 <body>
-  <div class="game-shell" data-username="{{ username }}" data-usergender="{{ usergender }}">
+  <div class="game-shell" data-username="{{ username }}">
     <header class="top-bar">
       <div class="system-title">{{ bot_name }} // MISSION CONTROL</div>
 
@@ -905,17 +905,9 @@
     <main class="main-layout">
       <aside class="side-panel">
         <div class="character-card">
-          {% if usergender == "여성" %}
-          <img src="{{ url_for('static', filename='images/chatbot/Woman_Profile.png') }}" alt="User Character"
-            onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
-          <div class="character-placeholder" style="display: none">YCH</div>
-          {% elif usergender == "남성" %}
           <img src="{{ url_for('static', filename='images/chatbot/Man_Profile.png') }}" alt="User Character"
             onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
           <div class="character-placeholder" style="display: none">YCH</div>
-          {% else %}
-          <div class="character-placeholder">YCH</div>
-          {% endif %}
         </div>
 
         <div class="memo-box">
