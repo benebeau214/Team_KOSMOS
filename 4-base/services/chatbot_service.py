@@ -547,11 +547,12 @@ class ChatbotService:
             story_flags = game_state.story_flags if hasattr(game_state, 'story_flags') else {}
             has_asked_cargo = story_flags.get("hasAskedEmptyCargo", False)
             has_asked_oxygen = story_flags.get("hasAskedOxygenTank", False)
+            has_asked_procedure = story_flags.get("hasAskedProcedure", False)
             
-            if has_asked_cargo and has_asked_oxygen:
-                tone_instruction = base_phase2_tone + "\n  ★★중요: 사용자가 두 가지 문제(빈 화물칸, 손상된 산소탱크)를 모두 언급했습니다. 대화를 회피하며 '화성 궤도 진입 승인을 위해 조종실로 이동하라'는 지시를 반드시 내리세요."
+            if has_asked_procedure or (has_asked_cargo and has_asked_oxygen):
+                tone_instruction = base_phase2_tone + "\n  ★★중요: 사용자가 화물칸/산소탱크 문제를 모두 언급했거나, '절차'에 대해 질문했습니다. 대화를 회피하며 '화성 궤도 진입 승인을 위해 조종실로 이동하라'는 지시를 반드시 내리세요."
             else:
-                tone_instruction = base_phase2_tone + "\n  ★★중요: 조종실로 가라는 말은 아직 절대 꺼내지 마세요. 사용자가 화물칸과 산소탱크에 대한 의문을 모두 제기할 때까지 대화를 회피하고 방어적으로만 응대하세요."
+                tone_instruction = base_phase2_tone + "\n  ★★중요: 조종실로 가라는 말은 아직 절대 꺼내지 마세요. 사용자가 화물칸과 산소탱크에 대한 의문을 모두 제기하거나 '절차'에 대해 질문할 때까지 대화를 회피하고 방어적으로만 응대하세요."
         else:
             tone_instruction = (
                 "- [Phase 3 - 적대]\n"

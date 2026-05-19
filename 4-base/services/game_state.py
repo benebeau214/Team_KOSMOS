@@ -16,6 +16,9 @@ class GameState:
         "hasOfferedCockpitEntry": "조종실 진입 선택지 제시",
         "awaitingOrbitReturnCode": "회항 코드 입력 대기",
         "earthOrbitChoiceShown": "승인/회항 선택지 제시",
+        "hasAskedEmptyCargo": "빈 화물칸 질문함",
+        "hasAskedOxygenTank": "산소탱크 손상 질문함",
+        "hasAskedProcedure": "절차 질문함",
     }
 
     STAGE_STATES = {

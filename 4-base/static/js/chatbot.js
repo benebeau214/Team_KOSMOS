@@ -61,6 +61,7 @@ let oxygenWarningSfxPlayed = false;
 let alarmQueryCount = 0;
 let hasAskedEmptyCargo = false;
 let hasAskedOxygenTank = false;
+let hasAskedProcedure = false;
 let earthOrbitChoiceShown = false;
 let awaitingOrbitReturnCode = false;
 let gameEnded = false;
@@ -133,6 +134,7 @@ function getStoryFlags() {
     earthOrbitChoiceShown,
     hasAskedEmptyCargo,
     hasAskedOxygenTank,
+    hasAskedProcedure,
   };
 }
 
@@ -181,12 +183,12 @@ const stageVideos = {
     speed: 2.0,
   },
   2: {
-    idle: "/static/videos/chatbot/AI_P1_Wait.mp4",
+    idle: "/static/videos/chatbot/AI_P2_Loop.mp4",
     responding: "/static/videos/chatbot/AI_P2_Loop.mp4",
     speed: 2.5,
   },
   3: {
-    idle: "/static/videos/chatbot/AI_P1_Wait.mp4",
+    idle: "/static/videos/chatbot/AI_P3_Loop.mp4",
     responding: "/static/videos/chatbot/AI_P3_Loop.mp4",
     speed: 2.5,
   },
@@ -953,12 +955,16 @@ async function sendMessage(isInitial = false) {
     if (currentStage === 2) {
       const cargoKeywords = ["화물", "비어", "상자", "배달"];
       const oxygenKeywords = ["산소", "탱크", "결함"];
+      const procedureKeywords = ["절차", "방법", "규정"];
       
       if (cargoKeywords.some(kw => message.includes(kw))) {
         hasAskedEmptyCargo = true;
       }
       if (oxygenKeywords.some(kw => message.includes(kw))) {
         hasAskedOxygenTank = true;
+      }
+      if (procedureKeywords.some(kw => message.includes(kw))) {
+        hasAskedProcedure = true;
       }
     }
   }
@@ -1020,8 +1026,7 @@ async function sendMessage(isInitial = false) {
       currentStage === 2 &&
       hasEnteredCargoBay &&
       !hasEnteredCockpit &&
-      hasAskedEmptyCargo &&
-      hasAskedOxygenTank &&
+      (hasAskedProcedure || (hasAskedEmptyCargo && hasAskedOxygenTank)) &&
       replyText &&
       replyText.includes("조종실") &&
       (
